@@ -1,0 +1,22 @@
+window.TREE_CONFIG = {
+  title: "Academic Family Tree",
+  department: "Department of Sociology",
+  sheetId: "1pbUWvO93WnU1MRTr6RToCxOwIrM3P6Ae6xwLdynAZhE",
+  tabs: {
+    faculty: "Faculty",
+    connections: "Connections",
+    responses: "Responses",
+    people: "People",
+  },
+  formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf0OdHoPnEDRrxp0HcTUvRfk5qhEAMHLwyeQ5okGvdy65CGkA/viewform",
+  formPrefillUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf0OdHoPnEDRrxp0HcTUvRfk5qhEAMHLwyeQ5okGvdy65CGkA/viewform?usp=pp_url&entry.814763903=PERSON&entry.1262022426=NAME&entry.740804677=ROLE&entry.666654216=ACTION&entry.1706913652=INSTITUTION&entry.1466968475=YEAR",
+  saveInPage: true,
+  roleChair: "Chair",
+  roleCommittee: "Committee member",
+  actionAdd: "Add",
+  actionRemove: "Remove",
+  actionRename: "Rename",
+  actionField: "Field",
+  actionConfirm: "Confirm",
+  actionUnconfirm: "Unconfirm",
+};

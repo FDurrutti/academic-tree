@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Academic Family Tree</title>
+<meta name="description" content="Who trained whom: the PhD advisors of our faculty and their academic ancestors. Anyone can add a missing link.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="top-text">
+      <p class="eyebrow" id="dept"></p>
+      <h1 id="title">Academic Family Tree</h1>
+      <p class="lede">Who trained whom: our faculty's PhD advisors, their advisors, and so on back through the generations. Anyone can add a missing link, and it shows up in the tree right away.</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn primary" id="add-btn" href="#how" target="_blank" rel="noopener">Add to the tree</a>
+      <a class="btn" href="#how">How to add</a>
+      <div class="progress" id="progress"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="tree-section" aria-label="The tree">
+    <div class="wrap toolbar">
+      <form class="search" id="search-form" role="search">
+        <label for="search" class="visually-hidden">Find a person</label>
+        <input id="search" type="search" list="names" placeholder="Find a person…" autocomplete="off">
+        <datalist id="names"></datalist>
+        <button class="btn" type="submit">Find</button>
+      </form>
+      <div class="zoom" role="group" aria-label="Zoom">
+        <button class="btn icon" id="zoom-out" type="button" aria-label="Zoom out">−</button>
+        <button class="btn icon" id="zoom-in" type="button" aria-label="Zoom in">+</button>
+        <button class="btn" id="zoom-fit" type="button">Fit</button>
+      </div>
+      <label class="toggle" for="show-committee"><input type="checkbox" id="show-committee" checked> Show committee members</label>
+      <ul class="legend" aria-label="Legend">
+        <li><span class="key key-faculty"></span>Our faculty</li>
+        <li><span class="key key-missing"></span>Missing: click to add</li>
+        <li><span class="key key-line"></span>Chair</li>
+        <li><span class="key key-line key-dotted"></span>Committee member</li>
+      </ul>
+    </div>
+    <div class="wrap field-legend" id="field-legend" hidden></div>
+    <p class="wrap search-note" id="search-note" aria-live="polite"></p>
+    <div class="stage" id="stage">
+      <svg id="tree" aria-label="Academic family tree. Use the search box or the table below to explore it with a keyboard.">
+        <g id="viewport"><g id="edges"></g><g id="nodes"></g></g>
+      </svg>
+      <aside class="panel" id="panel" hidden aria-live="polite"></aside>
+      <p class="zoom-hint" id="zoom-hint" hidden>Pinch, or hold Ctrl and scroll, to zoom. Drag to move around.</p>
+      <p class="toast" id="toast" role="status" hidden></p>
+    </div>
+    <p class="wrap status" id="status">Loading the tree…</p>
+  </section>
+
+  <section class="wrap cards">
+    <div class="card">
+      <h2>Help complete the tree</h2>
+      <p class="card-sub">These faculty members don't have their chair in the tree yet. Click a name to add one.</p>
+      <div class="chips" id="missing"></div>
+    </div>
+    <div class="card">
+      <h2>Family resemblances</h2>
+      <p class="card-sub">The closest academic ancestors, through PhD chairs, that two or more of our faculty share.</p>
+      <ol class="ranked" id="facts"></ol>
+      <button class="more-rows" id="facts-more" type="button" hidden></button>
+    </div>
+    <div class="card">
+      <h2>Recently added</h2>
+      <ul class="recent" id="recent"></ul>
+    </div>
+  </section>
+
+  <section class="wrap how" id="how">
+    <h2>How to add someone</h2>
+    <ol class="steps">
+      <li><strong>Find yourself in the tree.</strong> Type your name in the search box above the tree, or click your name in it.</li>
+      <li><strong>Click “+ Add chair” or “+ Add committee member”.</strong> A small form opens beside the tree.</li>
+      <li><strong>Type the names and click “Add to the tree”.</strong> They appear in the tree straight away, and everyone else sees them the next time they open the page.</li>
+      <li><strong>Keep going back.</strong> Click your chair to add their chair and committee, and so on.</li>
+    </ol>
+    <h3>Tips</h3>
+    <ul class="tips">
+      <li>Solid lines lead to a person's chair, dotted lines to their committee members. Untick “Show committee members” to see only the chairs.</li>
+      <li>Write full names. Middle names and initials don't matter: “James S. Coleman” and “James Samuel Coleman” are the same person. Names already in the tree are suggested as you type.</li>
+      <li>Something wrong? Click the person and press “Remove” next to the wrong name, then add the right one. Every change can be undone: use “Undo” in the message that appears, or under “Recently added”.</li>
+      <li>Done with your own information? Click your name and tick “My information is complete and correct”, so we know. You can untick it anytime.</li>
+      <li>Name misspelled? Click the person and choose “Correct the name”. If two boxes are the same person, rename one to match the other and they merge.</li>
+      <li>Colors show each person's field, as listed on Academic Tree. Plain boxes are sociology. Wrong field? Click the person and choose “Change” next to Field.</li>
+      <li>The tree arranges itself: you only say who chaired or sat on whose committee, and the page works out where everyone goes.</li>
+    </ul>
+    <details class="table-wrap">
+      <summary>All connections as a table</summary>
+      <div class="table-scroll" id="table"></div>
+    </details>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p>Starting data from <a href="https://academictree.org" target="_blank" rel="noopener">Academic Tree</a> and the department's research team, October 2026. Everything else was added by members of the department.</p>
+  <p id="contact"></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+<script src="config.js"></script>
+<script src="data/seed.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
