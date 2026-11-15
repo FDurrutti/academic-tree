@@ -324,3 +324,4 @@ a.chip:hover, button.chip:hover { background: var(--accent-soft); }
   padding: 0; border: 0; background: none; color: var(--accent);
   font: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
 }
+.cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }

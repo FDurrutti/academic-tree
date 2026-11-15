@@ -1248,6 +1248,7 @@
 
   async function init() {
     document.title = C.department ? `${C.title} · ${C.department}` : C.title;
+    if (/(^#|&)team\b/i.test(location.hash)) $("recent-card").hidden = false;
     $("title").textContent = C.title;
     $("dept").textContent = C.department;
     const add = $("add-btn");
