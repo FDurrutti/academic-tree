@@ -1186,6 +1186,18 @@
       h("button", { class: "linkish strong", type: "button", text: p.name, onclick: () => openSelect(p.key) }), what,
       h("small", {}, joinDots([r.when || null, ...actions])));
   }
+  const PURGED_KEY = "academic-tree-purged-messages";
+  function readPurged() {
+    try { return new Set(JSON.parse(localStorage.getItem(PURGED_KEY) || "[]")); } catch (e) { return new Set(); }
+  }
+  function purgeMessages(list, ask) {
+    if (ask && !window.confirm(`Delete ${list.length} message${list.length === 1 ? "" : "s"} forever? They won't come back to either list. The changes themselves stay in the tree.`)) return;
+    const purged = readPurged(), hidden = readHidden();
+    list.forEach((r) => { purged.add(messageId(r)); hidden.delete(messageId(r)); });
+    try { localStorage.setItem(PURGED_KEY, JSON.stringify([...purged])); } catch (e) { }
+    writeHidden(hidden);
+    renderRecent();
+  }
   function recoverMessages(list) {
     const hidden = readHidden();
     list.forEach((r) => hidden.delete(messageId(r)));
@@ -1194,9 +1206,10 @@
   }
 
   function renderRecent() {
-    const hidden = readHidden();
-    const deleted = model.recent.filter((r) => hidden.has(messageId(r)));
-    const showing = model.recent.filter((r) => !hidden.has(messageId(r)));
+    const hidden = readHidden(), purged = readPurged();
+    const kept = model.recent.filter((r) => !purged.has(messageId(r)));
+    const deleted = kept.filter((r) => hidden.has(messageId(r)));
+    const showing = kept.filter((r) => !hidden.has(messageId(r)));
     if (!deleted.length) deletedOpen = false;
 
     const items = showing.map((r) => messageLine(r, [
@@ -1204,8 +1217,9 @@
       h("button", { class: "mini-action", type: "button", text: "Delete message", onclick: () => hideMessages([r]) }),
     ]));
     if (!items.length) {
-      items.push(h("li", { class: "empty", text: model.recent.length
+      items.push(h("li", { class: "empty", text: deleted.length
         ? "No messages here. Deleted messages are in the “Deleted messages” box."
+        : kept.length < model.recent.length ? "No messages here."
         : lastData && (lastData.live || canSave) ? "Nothing added yet." : "New entries will show up here once the Google Sheet is connected." }));
     }
     fill($("recent"), items);
@@ -1223,9 +1237,12 @@
     if (deletedOpen) {
       fill($("deleted-list"), deleted.map((r) => messageLine(r, [
         h("button", { class: "mini-action", type: "button", text: "Recover", onclick: () => recoverMessages([r]) }),
+        h("button", { class: "mini-action danger", type: "button", text: "Delete forever", onclick: () => purgeMessages([r], false) }),
       ])));
-      fill($("deleted-tools"), deleted.length > 1
-        ? [h("button", { class: "mini-action", type: "button", text: "Recover all", onclick: () => recoverMessages(deleted) })] : []);
+      fill($("deleted-tools"), deleted.length > 1 ? joinDots([
+        h("button", { class: "mini-action", type: "button", text: "Recover all", onclick: () => recoverMessages(deleted) }),
+        h("button", { class: "mini-action danger", type: "button", text: "Delete all forever", onclick: () => purgeMessages(deleted, true) }),
+      ]) : []);
     }
   }
 

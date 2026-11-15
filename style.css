@@ -343,3 +343,4 @@ a.chip:hover, button.chip:hover { background: var(--accent-soft); }
 }
 .deleted-box h3 { margin: 0; font-size: 14px; color: var(--ink-2); }
 .deleted-box .recent { max-height: 260px; color: var(--muted); }
+.mini-action.danger { color: var(--danger); }
