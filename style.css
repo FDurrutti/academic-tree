@@ -325,3 +325,5 @@ a.chip:hover, button.chip:hover { background: var(--accent-soft); }
   font: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
 }
 .cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.recent-tools { padding-top: 6px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.recent { max-height: 400px; overflow-y: auto; padding-right: 6px; overscroll-behavior: contain; }

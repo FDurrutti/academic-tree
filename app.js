@@ -1152,6 +1152,69 @@
   }
   $("facts-more").addEventListener("click", () => { factsExpanded = !factsExpanded; renderFacts(); });
 
+  const HIDDEN_KEY = "academic-tree-hidden-messages";
+  function readHidden() {
+    try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY) || "[]")); } catch (e) { return new Set(); }
+  }
+  function writeHidden(set) {
+    try { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...set])); } catch (e) { }
+  }
+  const messageId = (r) => [r.when, r.person, r.kind, (r.names || []).join(","), r.value || "", r.from || "", r.to || ""].join("|");
+  function hideMessages(list) {
+    const hidden = readHidden();
+    list.forEach((r) => hidden.add(messageId(r)));
+    writeHidden(hidden);
+    renderRecent();
+  }
+
+  function renderRecent() {
+    const hidden = readHidden();
+    const deleted = model.recent.filter((r) => hidden.has(messageId(r)));
+    const showing = model.recent.filter((r) => !hidden.has(messageId(r)));
+    const items = showing.map((r) => {
+      const p = model.people.get(r.person);
+      const names = listText(r.names || []) || "someone";
+      const what = {
+        rename: `: name changed from “${r.from}” to “${r.to}”`,
+        field: `: field set to ${r.value}`,
+        confirm: " confirmed their information is complete",
+        unconfirm: " reopened their information for changes",
+        remove: `: ${names} removed`,
+        add: r.role === "committee" ? `: ${names} added to the committee` : `, chaired by ${names}`,
+      }[r.kind];
+      const extras = [
+        r.when || null,
+        canSave && r.undo && r.undo.length ? h("button", { class: "mini-action", type: "button", text: "Undo", onclick: () => undo(r.undo) }) : null,
+        h("button", { class: "mini-action", type: "button", text: "Delete message", onclick: () => hideMessages([r]) }),
+      ].filter(Boolean);
+      return h("li", {},
+        h("button", { class: "linkish strong", type: "button", text: p.name, onclick: () => openSelect(p.key) }), what,
+        h("small", {}, extras.flatMap((x, k) => (k ? [" · ", x] : [x]))));
+    });
+    if (!items.length) {
+      items.push(h("li", { class: "empty", text: model.recent.length
+        ? "No messages left. Deleted messages stay deleted on this computer."
+        : lastData && (lastData.live || canSave) ? "Nothing added yet." : "New entries will show up here once the Google Sheet is connected." }));
+    }
+    const tools = [];
+    if (showing.length > 1) {
+      tools.push(h("button", { class: "mini-action", type: "button", text: "Delete all messages",
+        onclick: () => hideMessages(model.recent) }));
+    }
+    if (deleted.length) {
+      tools.push(h("button", { class: "mini-action", type: "button", text: `Show ${deleted.length} deleted message${deleted.length === 1 ? "" : "s"}`,
+        onclick: () => {
+          const keep = readHidden();
+          deleted.forEach((r) => keep.delete(messageId(r)));
+          writeHidden(keep);
+          renderRecent();
+        } }));
+    }
+    fill($("recent"), items);
+    $("recent-tools").hidden = !tools.length;
+    fill($("recent-tools"), tools.flatMap((x, k) => (k ? [" · ", x] : [x])));
+  }
+
   function renderSections(data) {
     const people = [...model.people.values()];
     const faculty = people.filter((p) => p.faculty);
@@ -1179,24 +1242,7 @@
 
     renderFacts();
 
-    const recent = model.recent.slice(0, 6);
-    fill($("recent"), recent.length ? recent.map((r) => {
-      const p = model.people.get(r.person);
-      const names = listText(r.names || []) || "someone";
-      const what = {
-        rename: `: name changed from “${r.from}” to “${r.to}”`,
-        field: `: field set to ${r.value}`,
-        confirm: " confirmed their information is complete",
-        unconfirm: " reopened their information for changes",
-        remove: `: ${names} removed`,
-        add: r.role === "committee" ? `: ${names} added to the committee` : `, chaired by ${names}`,
-      }[r.kind];
-      return h("li", {},
-        h("button", { class: "linkish strong", type: "button", text: p.name, onclick: () => openSelect(p.key) }), what,
-        h("small", {}, r.when || "",
-          canSave && r.undo && r.undo.length ? [r.when ? " · " : "", h("button", { class: "mini-action", type: "button",
-            text: "Undo", onclick: () => undo(r.undo) })] : null));
-    }) : [h("li", { class: "empty", text: data.live || canSave ? "Nothing added yet. Be the first!" : "New entries will show up here once the Google Sheet is connected." })]);
+    renderRecent();
 
     const groups = new Set(people.filter((p) => !p.faculty).map((p) => fieldGroup(p.field)).filter(Boolean));
     $("field-legend").hidden = !groups.size;
