@@ -1169,52 +1169,64 @@
     renderRecent();
   }
 
+  let deletedOpen = false;
+  const joinDots = (parts) => parts.filter(Boolean).flatMap((x, k) => (k ? [" · ", x] : [x]));
+  function messageLine(r, actions) {
+    const p = model.people.get(r.person);
+    const names = listText(r.names || []) || "someone";
+    const what = {
+      rename: `: name changed from “${r.from}” to “${r.to}”`,
+      field: `: field set to ${r.value}`,
+      confirm: " confirmed their information is complete",
+      unconfirm: " reopened their information for changes",
+      remove: `: ${names} removed`,
+      add: r.role === "committee" ? `: ${names} added to the committee` : `, chaired by ${names}`,
+    }[r.kind];
+    return h("li", {},
+      h("button", { class: "linkish strong", type: "button", text: p.name, onclick: () => openSelect(p.key) }), what,
+      h("small", {}, joinDots([r.when || null, ...actions])));
+  }
+  function recoverMessages(list) {
+    const hidden = readHidden();
+    list.forEach((r) => hidden.delete(messageId(r)));
+    writeHidden(hidden);
+    renderRecent();
+  }
+
   function renderRecent() {
     const hidden = readHidden();
     const deleted = model.recent.filter((r) => hidden.has(messageId(r)));
     const showing = model.recent.filter((r) => !hidden.has(messageId(r)));
-    const items = showing.map((r) => {
-      const p = model.people.get(r.person);
-      const names = listText(r.names || []) || "someone";
-      const what = {
-        rename: `: name changed from “${r.from}” to “${r.to}”`,
-        field: `: field set to ${r.value}`,
-        confirm: " confirmed their information is complete",
-        unconfirm: " reopened their information for changes",
-        remove: `: ${names} removed`,
-        add: r.role === "committee" ? `: ${names} added to the committee` : `, chaired by ${names}`,
-      }[r.kind];
-      const extras = [
-        r.when || null,
-        canSave && r.undo && r.undo.length ? h("button", { class: "mini-action", type: "button", text: "Undo", onclick: () => undo(r.undo) }) : null,
-        h("button", { class: "mini-action", type: "button", text: "Delete message", onclick: () => hideMessages([r]) }),
-      ].filter(Boolean);
-      return h("li", {},
-        h("button", { class: "linkish strong", type: "button", text: p.name, onclick: () => openSelect(p.key) }), what,
-        h("small", {}, extras.flatMap((x, k) => (k ? [" · ", x] : [x]))));
-    });
+    if (!deleted.length) deletedOpen = false;
+
+    const items = showing.map((r) => messageLine(r, [
+      canSave && r.undo && r.undo.length ? h("button", { class: "mini-action", type: "button", text: "Undo", onclick: () => undo(r.undo) }) : null,
+      h("button", { class: "mini-action", type: "button", text: "Delete message", onclick: () => hideMessages([r]) }),
+    ]));
     if (!items.length) {
       items.push(h("li", { class: "empty", text: model.recent.length
-        ? "No messages left. Deleted messages stay deleted on this computer."
+        ? "No messages here. Deleted messages are in the “Deleted messages” box."
         : lastData && (lastData.live || canSave) ? "Nothing added yet." : "New entries will show up here once the Google Sheet is connected." }));
     }
-    const tools = [];
-    if (showing.length > 1) {
-      tools.push(h("button", { class: "mini-action", type: "button", text: "Delete all messages",
-        onclick: () => hideMessages(model.recent) }));
-    }
-    if (deleted.length) {
-      tools.push(h("button", { class: "mini-action", type: "button", text: `Show ${deleted.length} deleted message${deleted.length === 1 ? "" : "s"}`,
-        onclick: () => {
-          const keep = readHidden();
-          deleted.forEach((r) => keep.delete(messageId(r)));
-          writeHidden(keep);
-          renderRecent();
-        } }));
-    }
     fill($("recent"), items);
+
+    const tools = joinDots([
+      showing.length > 1 ? h("button", { class: "mini-action", type: "button", text: "Delete all messages", onclick: () => hideMessages(showing) }) : null,
+      deleted.length ? h("button", { class: "mini-action", type: "button", "aria-expanded": String(deletedOpen),
+        text: deletedOpen ? "Hide deleted messages" : `Deleted messages (${deleted.length})`,
+        onclick: () => { deletedOpen = !deletedOpen; renderRecent(); } }) : null,
+    ]);
     $("recent-tools").hidden = !tools.length;
-    fill($("recent-tools"), tools.flatMap((x, k) => (k ? [" · ", x] : [x])));
+    fill($("recent-tools"), tools);
+
+    $("deleted-box").hidden = !deletedOpen;
+    if (deletedOpen) {
+      fill($("deleted-list"), deleted.map((r) => messageLine(r, [
+        h("button", { class: "mini-action", type: "button", text: "Recover", onclick: () => recoverMessages([r]) }),
+      ])));
+      fill($("deleted-tools"), deleted.length > 1
+        ? [h("button", { class: "mini-action", type: "button", text: "Recover all", onclick: () => recoverMessages(deleted) })] : []);
+    }
   }
 
   function renderSections(data) {

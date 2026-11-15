@@ -337,3 +337,9 @@ a.chip:hover, button.chip:hover { background: var(--accent-soft); }
   font-size: 20px; line-height: 1; cursor: pointer;
 }
 .toast-close:hover { background: color-mix(in srgb, currentColor 15%, transparent); }
+.deleted-box {
+  display: grid; gap: 8px; padding: 12px;
+  border: 1px dashed var(--line-strong); border-radius: 10px; background: var(--bg);
+}
+.deleted-box h3 { margin: 0; font-size: 14px; color: var(--ink-2); }
+.deleted-box .recent { max-height: 260px; color: var(--muted); }
