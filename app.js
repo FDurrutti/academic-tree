@@ -948,8 +948,10 @@
   function toast(message, undoEntries) {
     const el = $("toast");
     const canUndo = !!(undoEntries && undoEntries.length && canSave);
-    fill(el, [message, canUndo ? [" ", h("button", { class: "toast-undo", type: "button", text: "Undo",
-      onclick: () => undo(undoEntries) })] : null]);
+    fill(el, [h("span", { text: message }),
+      canUndo ? h("button", { class: "toast-undo", type: "button", text: "Undo", onclick: () => undo(undoEntries) }) : null,
+      h("button", { class: "toast-close", type: "button", "aria-label": "Close this message", text: "×",
+        onclick: () => { clearTimeout(toastTimer); el.hidden = true; } })]);
     el.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { el.hidden = true; }, canUndo ? 10000 : 5000);

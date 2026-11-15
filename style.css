@@ -327,3 +327,13 @@ a.chip:hover, button.chip:hover { background: var(--accent-soft); }
 .cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
 .recent-tools { padding-top: 6px; border-top: 1px solid var(--line); font-size: 12.5px; }
 .recent { max-height: 400px; overflow-y: auto; padding-right: 6px; overscroll-behavior: contain; }
+.card-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; justify-content: space-between; }
+.card-head .recent-tools { padding: 0; border: 0; font-size: 12.5px; color: var(--muted); }
+.toast { display: flex; align-items: center; gap: 10px; }
+.toast-undo { margin-left: 0; }
+.toast-close {
+  flex: none; width: 26px; height: 26px; margin-right: -6px; padding: 0;
+  border: 0; border-radius: 6px; background: transparent; color: inherit;
+  font-size: 20px; line-height: 1; cursor: pointer;
+}
+.toast-close:hover { background: color-mix(in srgb, currentColor 15%, transparent); }
